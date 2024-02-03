@@ -7,43 +7,61 @@ class Conta:
 
     def deposita(self, valor):
         self.saldo += valor
+        return self.saldo
 
     def saca(self, valor):
-        if valor > self.saldo + self.limite:
+        if self.saldo + self.limite >= valor:
+            self.saldo -= valor
+            return self.saldo
+        else:
             print("Saldo insuficiente")
-            return
-        self.saldo -= valor
+            return None
 
     def extrato(self):
-        print(f"Conta: {self.numero}, Titular: {self.titular}, Saldo: {self.saldo}")
+        print(f"Conta: {self.numero}")
+        print(f"Titular: {self.titular}")
+        print(f"Saldo: {self.saldo}")
+        print(f"Limite: {self.limite}")
 
 
 def grava_conta(conta, arquivo):
-    with open(arquivo, "w") as f:
-        f.write(f"{conta.numero};{conta.titular};{conta.saldo};{conta.limite}\n")
+    with open(arquivo, "a") as file:
+        file.write(f"{conta.numero};{conta.titular[0]};{conta.titular[1]};{conta.saldo};{conta.limite}\n")
 
 
 def le_conta(arquivo):
-    with open(arquivo, "r") as f:
-        linha = f.readline()
-    if not linha:
-        return None
-    numero, titular, saldo, limite = linha.strip().split(";")
-    return Conta(numero, titular, float(saldo), float(limite))
+    with open(arquivo, "r") as file:
+        linha = file.readline()
+        if not linha:
+            return None
+        numero, nome, cpf, saldo, limite = linha.strip().split(";")
+        return Conta(int(numero), (nome, cpf), float(saldo), float(limite))
+
+
+def cadastrar_cliente():
+    nome = input("Digite o nome do cliente: ")
+    cpf = input("Digite o CPF do cliente: ")
+    return (nome, cpf)
+
+
+def cadastrar_conta(cliente):
+    numero = int(input("Digite o número da conta: "))
+    saldo = float(input("Digite o saldo inicial: "))
+    limite = float(input("Digite o limite da conta: "))
+    return Conta(numero, cliente, saldo, limite)
 
 
 def main():
-    conta = Conta("123-4", "João", 120.0, 1000.0)
+    cliente = cadastrar_cliente()
+    conta = cadastrar_conta(cliente)
     grava_conta(conta, "contas.txt")
-
-    conta_arquivo = le_conta("contas.txt")
-    conta_arquivo.extrato()
-
-    conta_arquivo.deposita(50.0)
-    conta_arquivo.extrato()
-
-    conta_arquivo.saca(20.0)
-    conta_arquivo.extrato()
+    conta_carregada = le_conta("contas.txt")
+    if conta_carregada:
+        conta_carregada.extrato()
+        conta_carregada.deposita(100)
+        conta_carregada.extrato()
+        conta_carregada.saca(50)
+        conta_carregada.extrato()
 
 
 if __name__ == "__main__":
